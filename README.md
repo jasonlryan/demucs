@@ -1,103 +1,110 @@
-# Demucs Audio Separator & Editor
+# Audio Separation Project
 
-A web-based audio separation and mixing tool that supports multiple separation libraries (Demucs, Spleeter, MDX23) with an intuitive interface for loading, playing, and exporting separated stems.
-
-## Features
-
-- **Multiple Splitter Support**: Choose from Demucs (4-stem/6-stem), Spleeter, or MDX23
-- **Automatic Project Loading**: Upload → Separate → Auto-load workflow
-- **Track Hierarchy**: Mix track + parent stems + collapsible child tracks (from secondary splits)
-- **Real-time Playback**: Mix and play stems with individual volume controls, solo, and mute
-- **Export**: Export individual stems or the mixed audio
-- **Project Management**: Load existing separated projects or add individual stems
-
-## Requirements
-
-- Python 3.7+
-- Flask
-- One or more separation libraries:
-  - Demucs: `pip install demucs`
-  - Spleeter: `pip install spleeter`
-  - MDX23: `pip install mdx23`
-
-## Installation
-
-1. Clone the repository:
-```bash
-git clone https://github.com/jasonlryan/demucs.git
-cd demucs
-```
-
-2. Install dependencies:
-```bash
-pip install flask flask-cors librosa numpy
-```
-
-3. Install at least one separation library (e.g., Demucs):
-```bash
-pip install demucs
-```
-
-## Usage
-
-1. Start the Flask server:
-```bash
-python app.py
-```
-
-2. Open your browser to `http://localhost:5001`
-
-3. Upload an audio file or load an existing separated project:
-   - **New Upload**: Drag & drop or select an audio file, choose splitter/model, then click "Separate Audio"
-   - **Existing Project**: Enter the path to a separated folder and click "Load"
+A full-stack audio separation application with a React frontend and Flask backend.
 
 ## Project Structure
 
 ```
-sound2/
-├── app.py                 # Flask backend with API endpoints
-├── audio_editor.html      # Frontend web interface
-├── separate_audio.py      # Standalone separation script
-├── serve_editor.py        # Simple HTTP server (alternative)
-├── run.sh                 # Run script
-├── data/                  # Input audio files (not in repo)
-└── separated/             # Output separated stems (not in repo)
+.
+├── src/                    # React frontend source
+│   ├── components/         # React components
+│   ├── styles/             # Design system & styles
+│   └── App.tsx            # Main React app
+├── public/                 # Static files
+├── app.py                 # Flask backend API
+├── separate_audio.py      # Audio separation script
+├── package.json           # Node.js dependencies
+└── tsconfig.json          # TypeScript config
 ```
+
+## Quick Start
+
+### Development Mode
+
+**Terminal 1 - React Frontend:**
+```bash
+npm start
+```
+Runs React dev server at http://localhost:3000 (proxies API calls to Flask)
+
+**Terminal 2 - Flask Backend:**
+```bash
+python app.py
+```
+Runs Flask API at http://localhost:5001
+
+### Production Build
+
+1. Build React app:
+```bash
+npm run build
+```
+
+2. Run Flask server (serves React build):
+```bash
+python app.py
+```
+
+The Flask server will serve the React app at http://localhost:5001
+
+## Features
+
+- 🎨 Modern React UI with dark theme
+- 🎵 Audio separation using Demucs
+- 🎤 **Vocal Separation**: Split vocals into lead and backing vocals using spectral analysis
+- 🥁 **Drum Separation**: Split drums into kick, snare, hihat, cymbals, etc.
+- 🔌 RESTful API backend
+- 📦 Support for multiple splitters (Demucs, Spleeter, etc.)
+- 🎛️ Track mixing with mute, solo, volume controls
+- 📁 Collapsible track groups for parent/child tracks
+- 💾 Export individual stems or mixed audio
 
 ## API Endpoints
 
 - `GET /api/splitters` - Get available splitters and models
 - `POST /api/upload` - Upload audio file
 - `POST /api/separate/<job_id>` - Run separation with selected splitter/model
+- `POST /api/split-vocals/<job_id>` - Split vocals into lead/backing
+- `POST /api/split-drums/<job_id>` - Split drums into parts (kick, snare, etc.)
+- `GET /api/stems/<job_id>/<stem_path>` - Get stem file (supports nested paths)
 - `POST /api/load-project` - Load existing separated project
-- `POST /api/add-stem/<job_id>` - Add/replace individual stem
-- `POST /api/split-vocals/<job_id>` - Secondary split on vocals
-- `POST /api/split-drums/<job_id>` - Secondary split on drums
-- `GET /api/stems/<job_id>/<stem_path>` - Serve stem files via HTTP
+- `POST /api/analyze/<job_id>` - Analyze stems and suggest labels
 
-## Features in Detail
+## Tech Stack
 
-### State Machine
-The frontend uses a state machine (idle → uploading → separating → loading → ready) to manage UI state and provide clear feedback.
+**Frontend:**
+- React 18
+- TypeScript
+- Styled Components
+- Lucide React (Icons)
 
-### Manifest System
-Projects use a manifest structure that includes:
-- Job ID and splitter/model info
-- Mix track (original file)
-- Parent stems (vocals, drums, bass, etc.)
-- Child stems (from secondary splits, e.g., vocals/lead, vocals/backing)
+**Backend:**
+- Flask
+- Demucs (audio separation)
+- Librosa (audio analysis & vocal separation)
+- SoundFile (audio I/O)
+- SciPy (signal processing)
+- NumPy (numerical computing)
 
-### Track Tree UI
-- Mix track displayed first
-- Parent stems with controls
-- Collapsible child tracks for secondary splits
-- Visual hierarchy with indentation
+## Vocal Separation
 
-## License
+See [VOCAL_SEPARATION.md](VOCAL_SEPARATION.md) for detailed documentation on the vocal separation feature.
 
-MIT
+The vocal separation uses spectral analysis to split vocals into:
+- **Lead Vocals**: Main vocal track (centered, clear)
+- **Backing Vocals**: Harmonies, ad-libs, background vocals
 
-## Contributing
+## Drum Separation
 
-Contributions welcome! Please feel free to submit a Pull Request.
+Drum separation splits drums into individual parts:
+- **Kick**: Low-frequency drum hits
+- **Snare**: Snare drum hits
+- **Hihat**: Hi-hat cymbals
+- **Cymbals**: Crash, ride, and other cymbals
+- **Toms**: Tom-tom drums
 
+Uses frequency-based separation and spectral analysis techniques.
+
+## Development
+
+The React app proxies API requests to the Flask backend during development. Make sure both servers are running for full functionality.
